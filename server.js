@@ -8,16 +8,16 @@
 //////EXPRESS服务器////////
 const express = require('express');
 const app = express();
-var imgId,imgUrl;
 
 ////////HTTP/////////
-const http = require('http').createServer(app);
+const https = require('http').createServer(app);
 
 //当前目录下环境变量port的值
 const port = process.env.PORT || 1989;
 
-const server = app.listen(port);
-console.log('Server is running localhost on port: ' + port);
+//app.listen也可
+const server = https.listen(port);
+console.log('服务器运行在端口: ' + port);
 
 //io()的出处
 const io = require('socket.io').listen(server);

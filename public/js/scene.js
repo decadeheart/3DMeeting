@@ -35,26 +35,26 @@ class Scene {
 		let self = this;
 		roomLoader.load(
 			//资源链接
-			'images/room2.gltf',
-
-			// called when resource is loaded
+			'images/room3.gltf',
 			function (glb) {
 				let building = glb.scene;
 				self.scene.add(building);			
 			},
-			function ( xhr ) {
-
-				console.log('room'+ ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-		
-			},
-			// called when loading has errors
-			function ( error ) {
-
-				console.log( 'An error happened in room' );
-
-			}			
+			onProgress,
+			onError
 		)
 
+		// roomLoader.load(
+		// 	//资源链接
+		// 	'images/test.gltf',
+		// 	function (glb) {
+		// 		let building = glb.scene;
+		// 		console.log('man',building);
+		// 		self.scene.add(building);			
+		// 	},
+		// 	onProgress,
+		// 	onError
+		// )
 
 		//房间
 		// let room1=CreateRoom('images/floor.jpg');
@@ -150,12 +150,41 @@ class Scene {
 		let x = Math.ceil(Math.random()*10); 
 		let y = Math.ceil(Math.random()*10); 
 
-		loadObj('images/man.obj').then(obj=>{
+		// loadMtl('images/','worker').then(obj=>{
+		// 	//console.log('obj',obj);
+		// 	//obj.scale.set(0.01,0.01,0.01);
+		// 	//obj.children[0].material.color.set(0xe8b73b);
+		// 	man=obj.children[0];
+		// 	//man.scale.set(0.03,0.03,0.03);
+		// 	man.position.set(x, 8, y);
+		// 	//console.log('人物',man);
+		// 	//self.scene.add(man);
+		// 	//let top = new THREE.Mesh(man,manMaterial);
+
+		// 	// 设置头部位置
+		// 	_body.position.set(x, 1, y);
+		// 	_head.position.set(x, 5, y);
+		// 	//top.position.set(0,2,4);
+		// 	//console.log('top',top)
+
+		// 	// https://threejs.org/docs/index.html#api/en/objects/Group
+			
+		// 	//self.playerGroup.position.set(0, 0.5, 0);
+		// 	self.playerGroup.add(_body);
+		// 	self.playerGroup.add(_head);
+		// 	self.playerGroup.add(man);
+		// 	self.playerVideoTexture = videoTexture;
+		// 	//console.log('playerGroup',self.playerGroup);
+
+		// 	self.scene.add(self.playerGroup);			
+		// })
+
+		loadGlb('images/','worker').then(obj=>{
 			//console.log('obj',obj);
 			//obj.scale.set(0.01,0.01,0.01);
-			obj.children[0].material.color.set(0xe8b73b);
-			man=obj.children[0];
-			man.scale.set(0.03,0.03,0.03);
+			//obj.children[0].material.color.set(0xe8b73b);
+			man=obj.scene
+			//man.scale.set(0.03,0.03,0.03);
 			man.position.set(x, 8, y);
 			//console.log('人物',man);
 			//self.scene.add(man);
@@ -219,7 +248,7 @@ class Scene {
 		var group = new THREE.Group();
 		var self = this;
 
-		loadObj('images/man.obj').then(obj=>{
+		loadMtl('images/','man').then(obj=>{
 			obj.children[0].material.color.set(0xe8b73b);
 			let man=obj.children[0];
 			man.scale.set(0.03,0.03,0.03);
@@ -632,29 +661,80 @@ function CreateTable(URL){
 
 }
 
-function loadObj(URL){
+function loadObj(path ,id){
 	let loder = new THREE.OBJLoader()
 	return new Promise((resolve,reject)=>{
-		loder.load(
+		loder.setPath(path)
+		.load(
 			//资源链接
-			URL,
-
-			// called when resource is loaded
+			id + '.obj',
 			function (obj) {
 				console.log(URL+'模型加载成功了')
 				resolve(obj);
 			},
-			function ( xhr ) {
-
-				console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-		
-			},
-			// called when loading has errors
-			function ( error ) {
-
-				console.log( 'An error happened' );
-
-			}
 		)		
+	}) 
+}
+
+function onProgress(xhr){
+	console.log( ( xhr.loaded / xhr.total * 100 ) + '% 已加载' );
+}
+
+function onError(error) {
+	console.log( 'An error happened:' ,error);
+}
+
+function loadMtl(path ,id){
+	
+	// let manager = new THREE.LoadingManager();
+	// //dds纹理
+	// let DDSLoader = new THREE.DDSLoader();
+	// manager.addHandler( /\.dds$/i, );	
+
+	let mtlLoader = new THREE.MTLLoader();
+
+	return new Promise((resolve,reject)=>{
+		mtlLoader
+		.load('images/worker.mtl',function(materials){
+			console.log(materials);
+			materials.preload();
+
+			let loder = new THREE.OBJLoader()
+				loder.setMaterials( materials )
+				.setPath(path)
+				.load(
+					//资源链接
+					id + '.obj',
+					function (obj) {
+						console.log(obj+'模型加载成功了')
+						resolve(obj);
+					}
+					,onProgress
+					,onError
+				)		
+		}			
+)
 	}) 	
+}
+
+function loadFbx(path,id){
+	let fbxLoader = new THREE.FBXLoader();
+	
+	return new Promise((resolve,reject)=>{
+		fbxLoader.load('images/worker.fbx',function(obj){
+			console.log(obj+'模型加载成功了');
+			resolve(obj);			
+		})
+	})
+}
+
+function loadGlb(path,id){
+	let glbLoader = new THREE.GLTFLoader();
+	
+	return new Promise((resolve,reject)=>{
+		glbLoader.load('images/worker.gltf',function(obj){
+			console.log(obj+'模型加载成功了');
+			resolve(obj);			
+		})
+	})
 }
