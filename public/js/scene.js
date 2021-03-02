@@ -35,7 +35,7 @@ class Scene {
 		let self = this;
 		roomLoader.load(
 			//资源链接
-			'images/room3.gltf',
+			'images/room2.gltf',
 			function (glb) {
 				let building = glb.scene;
 				self.scene.add(building);			
@@ -248,7 +248,7 @@ class Scene {
 		var group = new THREE.Group();
 		var self = this;
 
-		loadMtl('images/','man').then(obj=>{
+		loadObj('images/','man').then(obj=>{
 			obj.children[0].material.color.set(0xe8b73b);
 			let man=obj.children[0];
 			man.scale.set(0.03,0.03,0.03);
@@ -400,7 +400,7 @@ class Scene {
 		}
 		this.controls.update();
 		this.render();
-		//console.log('clients',clients);
+
 
 	}
 
@@ -735,6 +735,9 @@ function loadGlb(path,id){
 		glbLoader.load('images/worker.gltf',function(obj){
 			console.log(obj+'模型加载成功了');
 			resolve(obj);			
-		})
+		}
+		,onProgress
+		,onError
+		)
 	})
 }

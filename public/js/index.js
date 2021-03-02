@@ -120,7 +120,7 @@ function initSocketConnection() {
 
 
 	//终于成功连接上了！！！解决了技术难题，可以通信了！！，关键在于重新创建一个连接！！
-	socket2 = io.connect("ws://127.0.0.1:3000", {'force new connection': true });
+	socket2 = io.connect("wss://119.29.208.124:3000", {'force new connection': true });
 	//socket2 = io.connect("ws://localhost:3000", {transports: ['websocket', 'polling', 'flashsocket']},{'force new connection': true });
 	//socket2 = io.connect("ws://localhost:3000", {'force new connection': true });
 

@@ -11,26 +11,27 @@ const app = express();
 const fs = require('fs')
 
 const httpsOption = {
-  key:fs.readFileSync('./public/cert/127.0.0.1-key.pem'),
-  cert:fs.readFileSync('./public/cert/127.0.0.1.pem')
+  key:fs.readFileSync('./public/cert/key.pem'),
+  cert:fs.readFileSync('./public/cert/cert.pem')
 }
 console.log('httpsOption',httpsOption)
 ////////HTTP/////////
 //const https = require('http').createServer(app);
 
 ////////HTTPs/////////
-const https = require('https').createServer(httpsOption,app);
+const httpsServer = require('https')
+var server=httpsServer.createServer(httpsOption,app);
 
 //当前目录下环境变量port的值
 const port = process.env.PORT || 1989;
 
 //app.listen也可
-const server = https.listen(port);
+server = server.listen(port);
 console.log('服务器运行在端口: ' + port);
 
 //io()的出处
-const io = require('socket.io').listen(server);
-// io.set('origins', '*:*');
+var io = require('socket.io')(server)
+//"socket.io": "^3.1.2"版本写法与之前有所不同
 // io.set('origins', '0.0.0.0:3000','0.0.0.0:1989');
 
 app.use(express.static('public'));
