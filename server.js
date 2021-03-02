@@ -8,9 +8,18 @@
 //////EXPRESS服务器////////
 const express = require('express');
 const app = express();
+const fs = require('fs')
 
+const httpsOption = {
+  key:fs.readFileSync('./public/cert/127.0.0.1-key.pem'),
+  cert:fs.readFileSync('./public/cert/127.0.0.1.pem')
+}
+console.log('httpsOption',httpsOption)
 ////////HTTP/////////
-const https = require('http').createServer(app);
+//const https = require('http').createServer(app);
+
+////////HTTPs/////////
+const https = require('https').createServer(httpsOption,app);
 
 //当前目录下环境变量port的值
 const port = process.env.PORT || 1989;

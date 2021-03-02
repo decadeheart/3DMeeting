@@ -116,11 +116,11 @@ function addTracksToPeerConnection(_stream, _pc) {
 //建立socket连接
 function initSocketConnection() {
 	console.log("初始化 socket.io...");
-	socket = io().connect("https://localhost:1989",{secure: true})
+	socket = io().connect("https://127.0.0.1:1989",{secure: true})
 
 
 	//终于成功连接上了！！！解决了技术难题，可以通信了！！，关键在于重新创建一个连接！！
-	socket2 = io.connect("ws://10.11.51.155:3000", {'force new connection': true });
+	socket2 = io.connect("ws://127.0.0.1:3000", {'force new connection': true });
 	//socket2 = io.connect("ws://localhost:3000", {transports: ['websocket', 'polling', 'flashsocket']},{'force new connection': true });
 	//socket2 = io.connect("ws://localhost:3000", {'force new connection': true });
 
@@ -130,7 +130,7 @@ function initSocketConnection() {
 	socket.on('connect', () => { });
 
 	socket2.on('connect', () => {
-		console.log(' port connnected')
+		console.log(' 图片传输端口连接成功')
 	  });
 	  
 	//socket2.emit('CH01', 'me', 'test msg');
