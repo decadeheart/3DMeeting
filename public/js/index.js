@@ -11,6 +11,9 @@ var content;
 var homeContent; 
 var passContent;
 
+var oldModel = null;
+var newModel = null;
+var selfObj = {};	
 // 存储threejs的变量
 let glScene;
 
@@ -19,8 +22,8 @@ const { RTCPeerConnection, RTCSessionDescription } = window;
 let iceServerList;
 
 //视频宽、高、码率
-const videoWidth = 160;
-const videoHeight = 120;
+const videoWidth = 512;
+const videoHeight = 512;
 const videoFrameRate = 15;
 
 //本地流
@@ -120,9 +123,9 @@ function initSocketConnection() {
 
 
 	//终于成功连接上了！！！解决了技术难题，可以通信了！！，关键在于重新创建一个连接！！
-	socket2 = io.connect("wss://119.29.208.124:3000", {'force new connection': true });
+	//socket2 = io.connect("wss://35.226.160.240:3000", {'force new connection': true });
 	//socket2 = io.connect("ws://localhost:3000", {transports: ['websocket', 'polling', 'flashsocket']},{'force new connection': true });
-	//socket2 = io.connect("ws://localhost:3000", {'force new connection': true });
+	socket2 = io.connect("wss://35.192.30.220:3000", {'force new connection': true });
 
 	//下面是错误的连接方法
 	//socket2 = io().connect("ws://localhost:3000");
@@ -252,6 +255,12 @@ function initSocketConnection() {
 	socket.on('iceCandidateFound', data => {
 		clients[data.socket].peerConnection.addIceCandidate(data.candidate);
 	});
+
+
+	socket2.on('completed',res=>{
+		console.log('obj连接成功',res);
+		glScene.updateObj(res);
+	})
 }
 
 
@@ -272,6 +281,8 @@ function addClient(_id) {
 	// 设置已经连接真值
 	clients[_id].isAlreadyCalling = false;
 	clients[_id].isLoaded = false;
+	clients[_id].oldModel = null;
+	clients[_id].newModel = null;
 	glScene.addClient(_id);
 
 }

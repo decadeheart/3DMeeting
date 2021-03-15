@@ -11,6 +11,8 @@ class Scene {
 		_height = window.innerHeight,
 		clearColor = 'lightblue',
 		_movementCallback) {
+
+
 		//移动回调函数
 		this.movementCallback = _movementCallback;
 
@@ -33,16 +35,18 @@ class Scene {
 
 		let roomLoader = new THREE.GLTFLoader();
 		let self = this;
-		roomLoader.load(
-			//资源链接
-			'images/room2.gltf',
-			function (glb) {
-				let building = glb.scene;
-				self.scene.add(building);			
-			},
-			onProgress,
-			onError
-		)
+
+	
+		// roomLoader.load(
+		// 	//资源链接
+		// 	'images/room3.gltf',
+		// 	function (glb) {
+		// 		let building = glb.scene;
+		// 		self.scene.add(building);			
+		// 	},
+		// 	onProgress,
+		// 	onError
+		// )
 
 		// roomLoader.load(
 		// 	//资源链接
@@ -62,6 +66,46 @@ class Scene {
 
 		// let table = CreateTable('images/table.jpg');
 		// this.scene.add(table);
+		var dracoLoader = new THREE.DRACOLoader();
+		dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/');
+
+		roomLoader.setDRACOLoader(dracoLoader);
+		roomLoader.load(
+			//资源链接
+			'images/room3Draco.gltf',
+			function (glb) {
+				let building = glb.scene;
+				self.scene.add(building);			
+			},
+			onProgress,
+			onError
+		)
+
+		// roomLoader.load(
+		// 	//资源链接
+		// 	'images/color.gltf',
+		// 	function (glb) {
+		// 		let building = glb.scene;
+		// 		building.position.set(0,10,5);
+		// 		self.scene.add(building);	
+						
+		// 	},
+		// 	onProgress,
+		// 	onError
+		// )
+
+
+		dracoLoader.load('images/color.drc', function ( geometry ) {
+			geometry.computeVertexNormals();
+			var material = new THREE.MeshStandardMaterial( { vertexColors: THREE.VertexColors } );
+			var mesh = new THREE.Mesh( geometry, material );
+			mesh.castShadow = true;
+			mesh.receiveShadow = true;
+			mesh.position.set(0,0,5);
+			self.scene.add( mesh );
+		  } );
+
+
 		//绘制文字精灵
 		let sprite = drawSprite( '会议室--'+homeContent, 0.01, 120, 6, 9, 0 );
 		sprite.material.needsUpdate = true;
@@ -150,11 +194,45 @@ class Scene {
 		let x = Math.ceil(Math.random()*10); 
 		let y = Math.ceil(Math.random()*10); 
 
-		// loadMtl('images/','worker').then(obj=>{
+		loadObj('images/','color').then(obj=>{
+			//console.log('obj',obj);
+			//obj.scale.set(200,200,200);
+			//obj.children[0].material.color.set(0xe8b73b);
+			man=obj.children[0];
+			man.scale.set(4,4,4);
+			man.position.set(x, 8, y);
+			console.log('人物',man);
+			//self.scene.add(man);
+			//let top = new THREE.Mesh(man,manMaterial);
+
+			// 设置头部位置
+			_body.position.set(x, 1, y);
+			_head.position.set(x, 5, y);
+			//top.position.set(0,2,4);
+			//console.log('top',top)
+
+			// https://threejs.org/docs/index.html#api/en/objects/Group
+			
+			//self.playerGroup.position.set(0, 0.5, 0);
+			self.playerGroup.add(_body);
+			self.playerGroup.add(_head);
+			self.playerGroup.add(man);
+
+			selfObj = self.playerGroup;
+
+			oldModel = man;
+			
+			self.playerVideoTexture = videoTexture;
+			//console.log('playerGroup',self.playerGroup);
+
+			self.scene.add(self.playerGroup);			
+		})
+
+		// loadGlb('images/','worker').then(obj=>{
 		// 	//console.log('obj',obj);
 		// 	//obj.scale.set(0.01,0.01,0.01);
 		// 	//obj.children[0].material.color.set(0xe8b73b);
-		// 	man=obj.children[0];
+		// 	man=obj.scene
 		// 	//man.scale.set(0.03,0.03,0.03);
 		// 	man.position.set(x, 8, y);
 		// 	//console.log('人物',man);
@@ -178,35 +256,6 @@ class Scene {
 
 		// 	self.scene.add(self.playerGroup);			
 		// })
-
-		loadGlb('images/','worker').then(obj=>{
-			//console.log('obj',obj);
-			//obj.scale.set(0.01,0.01,0.01);
-			//obj.children[0].material.color.set(0xe8b73b);
-			man=obj.scene
-			//man.scale.set(0.03,0.03,0.03);
-			man.position.set(x, 8, y);
-			//console.log('人物',man);
-			//self.scene.add(man);
-			//let top = new THREE.Mesh(man,manMaterial);
-
-			// 设置头部位置
-			_body.position.set(x, 1, y);
-			_head.position.set(x, 5, y);
-			//top.position.set(0,2,4);
-			//console.log('top',top)
-
-			// https://threejs.org/docs/index.html#api/en/objects/Group
-			
-			//self.playerGroup.position.set(0, 0.5, 0);
-			self.playerGroup.add(_body);
-			self.playerGroup.add(_head);
-			self.playerGroup.add(man);
-			self.playerVideoTexture = videoTexture;
-			//console.log('playerGroup',self.playerGroup);
-
-			self.scene.add(self.playerGroup);			
-		})
 	}
 
 	// 视频纹理，区分信令里的方法
@@ -354,7 +403,7 @@ class Scene {
 		}
 		if (sendStats) { this.movementCallback(); }
 
-		if (this.frameCount % 20 === 0) {
+		if (this.frameCount % 200 === 0) {
 			//更新声音
 			//this.updateClientVolumes();
 			if(localMediaStream){
@@ -373,21 +422,39 @@ class Scene {
 				//var img = photoContext.drawImage(localMediaStream,400,400);
 				if(video){
 					//rvideoImageContext.drawImage(video,0,0,160,120);
-					photoContext.drawImage(video,0,0,160,120);
+					photoContext.drawImage(video,0,0,videoWidth,videoHeight);
 					//var img = photoContext.getImageData(0,0,160,120);
 					//console.log('img',img);
 					//var imgUrl = rvideoImageCanvas.toDataURL('image/jpeg');
 					//不用存，传输数据流
-					var imgUrl = photo.toDataURL('image/jpeg');
+					var imgUrl = photo.toDataURL('image/jpg');
 					//console.log('photrvideoImageCanvas',imgUrl);
 					socket2.emit('img',{
 						id: nowClient,
 						url: imgUrl
 					})
+
+
 				}
-				
+				// loadObj('images/','man').then(obj=>{
+				// 	let man=obj.children[0];
+				// 	man.scale.set(4,4,4);
+				// 	console.log('正在加载')
+				// 	newModel = man;
+				// 	if(oldModel!=newModel){
+				// 		self.playerGroup.children[3] = newModel;
+
+				// 		//初始oldModel为null
+				// 		oldModel = newModel
+				// 	}
+	
+				// }
+				// ,onError
+				// )
+
 			}
 		}
+
 		let canUpdate = true;
 		for (let _id in clients) {
 			if(!clients[_id].isLoaded){
@@ -474,6 +541,30 @@ class Scene {
 		event = event || window.event;
 		this.keyState[event.keyCode || event.which] = false;
 	}
+	updateObj(id){
+		let localVideo = document.getElementById("local_video");
+		let localVideoCanvas = document.getElementById("local_canvas");
+		let self = this;
+		loadObj('images/',id).then(obj=>{
+			let man=obj.children[0];
+			let position = self.getPlayerPosition()
+			man.scale.set(4,4,4);
+			man.position.set(position[0][0]+8,position[0][1]+6,position[0][2]);
+			console.log('正在加载')
+			newModel = man;
+
+			if(oldModel.normalMatrix.elements[0]!=newModel.normalMatrix.elements[0]){
+				selfObj.children[3] = newModel;
+				//初始oldModel为null
+				oldModel = newModel
+				self.redrawVideoCanvas(localVideo, localVideoCanvas, self.playerVideoTexture)
+			}
+	
+		}
+		,onError
+		)	
+	  }
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -681,7 +772,7 @@ function onProgress(xhr){
 }
 
 function onError(error) {
-	console.log( 'An error happened:' ,error);
+	console.log( '加载失败:' ,error);
 }
 
 function loadMtl(path ,id){
@@ -741,3 +832,16 @@ function loadGlb(path,id){
 		)
 	})
 }
+
+function loadDracoMesh(dracoFile) {
+	dracoLoader.load(dracoFile, function ( geometry ) {
+	  geometry.computeVertexNormals();
+
+	  var material = new THREE.MeshStandardMaterial( { vertexColors: THREE.VertexColors } );
+	  var mesh = new THREE.Mesh( geometry, material );
+	  mesh.castShadow = true;
+	  mesh.receiveShadow = true;
+	  scene.add( mesh );
+	} );
+  }
+
