@@ -1,4 +1,3 @@
-
 // socket.io
 let socket;
 let socket2;
@@ -10,10 +9,6 @@ var clientNames = {};
 var content;
 var homeContent; 
 var passContent;
-
-var oldModel = null;
-var newModel = null;
-var selfObj = {};	
 // 存储threejs的变量
 let glScene;
 
@@ -25,6 +20,21 @@ let iceServerList;
 const videoWidth = 512;
 const videoHeight = 512;
 const videoFrameRate = 15;
+
+ // 设置bodypix模型参数
+ const bodyPixProperties = {
+	architecture: 'MobileNetV1',
+	outputStride: 16,
+	multiplier: 0.75,
+	quantBytes: 4
+  };
+  
+// 设置分割参数
+  const segmentationProperties = {
+	flipHorizontal: false,
+	internalResolution: 'high',
+	segmentationThreshold: 0.9
+  };
 
 //本地流
 var localMediaStream = null;
@@ -41,6 +51,13 @@ let mediaConstraints = {
 }
 
 
+//判定分割是否完成
+var previousSegmentationComplete = true;
+
+
+//提前先加载模型，在使用bodypix分类时必须完成加载
+var modelHasLoaded = false;
+var model = undefined;
 
 ////////////////////////////////////////////////////////////////////////////////
 // 启动时的执行顺序
@@ -49,6 +66,12 @@ let mediaConstraints = {
 window.onload = async () => {
 	// 首先获得媒体，webrtc接口
 	localMediaStream = await getMedia(mediaConstraints);
+
+	model = bodyPix.load(bodyPixProperties).then(function (loadedModel) {
+	model = loadedModel;
+	modelHasLoaded = true;
+	});
+ 
 
 	function show(){
 		mask.style.display = "none";
@@ -61,7 +84,7 @@ window.onload = async () => {
 		homeContent = document.getElementById('homeContent').value;
 		passContent = document.getElementById('passContent').value;
 
-		if(content&&homeContent){
+		if(content&&homeContent&&modelHasLoaded){
 			mask.style.display = "none";
 			modal.style.display = "none";
 			// 信令连接
@@ -124,8 +147,8 @@ function initSocketConnection() {
 
 	//终于成功连接上了！！！解决了技术难题，可以通信了！！，关键在于重新创建一个连接！！
 	//socket2 = io.connect("wss://35.226.160.240:3000", {'force new connection': true });
-	//socket2 = io.connect("ws://localhost:3000", {transports: ['websocket', 'polling', 'flashsocket']},{'force new connection': true });
-	socket2 = io.connect("wss://35.192.30.220:3000", {'force new connection': true });
+	socket2 = io.connect("wss://localhost:3000",{'force new connection': true });
+	//socket2 = io.connect("wss://35.192.30.220:3000", {'force new connection': true });
 
 	//下面是错误的连接方法
 	//socket2 = io().connect("ws://localhost:3000");
@@ -259,7 +282,6 @@ function initSocketConnection() {
 
 	socket2.on('completed',res=>{
 		console.log('obj连接成功',res);
-		glScene.updateObj(res);
 	})
 }
 

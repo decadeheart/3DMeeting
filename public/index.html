@@ -10,6 +10,7 @@
 	<script crossorigin="anonymous" integrity="sha512-YybopSVjZU0fe8TY4YDuQbP5bhwpGBE/T6eBUEZ0usM72IWBfWrgVI13qfX4V2A/W7Hdqnm7PIOYOwP9YHnICw==" src="https://lib.baomitu.com/socket.io/3.1.2/socket.io.js"></script>
 	<script src="js/libs/three.min.js"></script>
 	<script src="js/libs/playerControls.js"></script>
+	<script src="js/libs/FirstPersonControls.js"></script>
 	<script src="js/libs/OBJLoader.js"></script>
 	<script src="js/libs/gltf-loader.js"></script>
 	<script src="js/libs/MTLLoader.js"></script>
@@ -19,7 +20,11 @@
 	<script src="js/scene.js"></script>
 	<script src="js/index.js"></script>
 	<script src="https://rawgit.com/google/draco/master/javascript/example/DRACOLoader.js"></script>
+    <!-- Import TensorFlow.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js" type="text/javascript"></script>
 
+    <!-- Load the bodypix model to recognize body parts in images -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.0"></script>
 	<style>
 		body {
 			overflow: hidden;
@@ -148,8 +153,7 @@
 	</div>
 	<!-- WebGL context -->
 	<div id="gl_context"></div>
-	<canvas id="photo"></canvas>
-
+	<!-- <canvas id="photo"></canvas> -->
 
 </body>
 

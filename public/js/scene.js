@@ -22,50 +22,23 @@ class Scene {
 		this.width = _width;
 		this.height = _height;
 
+		//相机
+		this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 1, 5000);
+		//this.camera.position.set(5, 20, 15);
+
+		
 		//增加播放器
 		this.addSelf();
 
 		// 灯光
 		this.addLights();
 
-		//相机
-		this.camera = new THREE.PerspectiveCamera(50, this.width / this.height, 0.1, 5000);
-		this.camera.position.set(5, 20, 15);
 		this.scene.add(this.camera);
 
 		let roomLoader = new THREE.GLTFLoader();
 		let self = this;
 
-	
-		// roomLoader.load(
-		// 	//资源链接
-		// 	'images/room3.gltf',
-		// 	function (glb) {
-		// 		let building = glb.scene;
-		// 		self.scene.add(building);			
-		// 	},
-		// 	onProgress,
-		// 	onError
-		// )
 
-		// roomLoader.load(
-		// 	//资源链接
-		// 	'images/test.gltf',
-		// 	function (glb) {
-		// 		let building = glb.scene;
-		// 		console.log('man',building);
-		// 		self.scene.add(building);			
-		// 	},
-		// 	onProgress,
-		// 	onError
-		// )
-
-		//房间
-		// let room1=CreateRoom('images/floor.jpg');
-		// this.scene.add(room1);
-
-		// let table = CreateTable('images/table.jpg');
-		// this.scene.add(table);
 		var dracoLoader = new THREE.DRACOLoader();
 		dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/');
 
@@ -75,35 +48,12 @@ class Scene {
 			'images/room3Draco.gltf',
 			function (glb) {
 				let building = glb.scene;
-				self.scene.add(building);			
+				self.scene.add(building);
+				console.log('building',building);		
 			},
 			onProgress,
 			onError
 		)
-
-		// roomLoader.load(
-		// 	//资源链接
-		// 	'images/color.gltf',
-		// 	function (glb) {
-		// 		let building = glb.scene;
-		// 		building.position.set(0,10,5);
-		// 		self.scene.add(building);	
-						
-		// 	},
-		// 	onProgress,
-		// 	onError
-		// )
-
-
-		dracoLoader.load('images/color.drc', function ( geometry ) {
-			geometry.computeVertexNormals();
-			var material = new THREE.MeshStandardMaterial( { vertexColors: THREE.VertexColors } );
-			var mesh = new THREE.Mesh( geometry, material );
-			mesh.castShadow = true;
-			mesh.receiveShadow = true;
-			mesh.position.set(0,0,5);
-			self.scene.add( mesh );
-		  } );
 
 
 		//绘制文字精灵
@@ -170,7 +120,6 @@ class Scene {
 		let text2d=content;
 		let texture = canvasMultilineText( text2d, { backgroundColor: 0xffffff}, 'rgba(155, 187, 89, 1)'  );
 		let wordMaterial = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.9 } );
-		let manMaterial = new THREE.MeshBasicMaterial({color:0xe8b73b});
 
 		let _body = new THREE.Mesh(
 			new THREE.BoxGeometry(4, 4, 4),
@@ -186,76 +135,33 @@ class Scene {
 			new THREE.BoxGeometry(4, 4, 4),
 			videoMaterial
 		);
+
 		this.playerGroup = new THREE.Group();
 
 		let self = this;
-		var man;
 
-		let x = Math.ceil(Math.random()*10); 
-		let y = Math.ceil(Math.random()*10); 
+		// let x = Math.ceil(Math.random()*10); 
+		// let y = Math.ceil(Math.random()*10); 
+		let x = -0.8193844556808472
+		let y = 3.1371405124664307
 
-		loadObj('images/','color').then(obj=>{
-			//console.log('obj',obj);
-			//obj.scale.set(200,200,200);
-			//obj.children[0].material.color.set(0xe8b73b);
-			man=obj.children[0];
-			man.scale.set(4,4,4);
-			man.position.set(x, 8, y);
-			console.log('人物',man);
-			//self.scene.add(man);
-			//let top = new THREE.Mesh(man,manMaterial);
+		// 设置头部位置
+		_body.position.set(x, 1, y);
+		_head.position.set(x, 5, y);
+		//console.log('top',top)
+		this.camera.position.set(x, 15, y);
+		// https://threejs.org/docs/index.html#api/en/objects/Group
+		
+		//self.playerGroup.position.set(0, 0.5, 0);
+		self.playerGroup.add(_body);
+		self.playerGroup.add(_head);
+		
+		self.playerVideoTexture = videoTexture;
 
-			// 设置头部位置
-			_body.position.set(x, 1, y);
-			_head.position.set(x, 5, y);
-			//top.position.set(0,2,4);
-			//console.log('top',top)
+		//console.log('playerGroup',self.playerGroup);
 
-			// https://threejs.org/docs/index.html#api/en/objects/Group
-			
-			//self.playerGroup.position.set(0, 0.5, 0);
-			self.playerGroup.add(_body);
-			self.playerGroup.add(_head);
-			self.playerGroup.add(man);
+		self.scene.add(self.playerGroup);			
 
-			selfObj = self.playerGroup;
-
-			oldModel = man;
-			
-			self.playerVideoTexture = videoTexture;
-			//console.log('playerGroup',self.playerGroup);
-
-			self.scene.add(self.playerGroup);			
-		})
-
-		// loadGlb('images/','worker').then(obj=>{
-		// 	//console.log('obj',obj);
-		// 	//obj.scale.set(0.01,0.01,0.01);
-		// 	//obj.children[0].material.color.set(0xe8b73b);
-		// 	man=obj.scene
-		// 	//man.scale.set(0.03,0.03,0.03);
-		// 	man.position.set(x, 8, y);
-		// 	//console.log('人物',man);
-		// 	//self.scene.add(man);
-		// 	//let top = new THREE.Mesh(man,manMaterial);
-
-		// 	// 设置头部位置
-		// 	_body.position.set(x, 1, y);
-		// 	_head.position.set(x, 5, y);
-		// 	//top.position.set(0,2,4);
-		// 	//console.log('top',top)
-
-		// 	// https://threejs.org/docs/index.html#api/en/objects/Group
-			
-		// 	//self.playerGroup.position.set(0, 0.5, 0);
-		// 	self.playerGroup.add(_body);
-		// 	self.playerGroup.add(_head);
-		// 	self.playerGroup.add(man);
-		// 	self.playerVideoTexture = videoTexture;
-		// 	//console.log('playerGroup',self.playerGroup);
-
-		// 	self.scene.add(self.playerGroup);			
-		// })
 	}
 
 	// 视频纹理，区分信令里的方法
@@ -403,57 +309,38 @@ class Scene {
 		}
 		if (sendStats) { this.movementCallback(); }
 
-		if (this.frameCount % 200 === 0) {
-			//更新声音
-			//this.updateClientVolumes();
-			if(localMediaStream){
-				//let rvideoImageCanvas = document.createElement('canvas');
-				//document.body.appendChild(rvideoImageCanvas);
-			
-				//rvideoImageCanvas.width = videoWidth;
-				//rvideoImageCanvas.height = videoHeight;
-				//let rvideoImageContext = rvideoImageCanvas.getContext('2d');
+		//控制刷新率
+		// if (this.frameCount % 20 === 0) {
+		// 	//更新声音
+		// 	//this.updateClientVolumes();
 
-				var photo=document.getElementById('photo');
-				var video = document.getElementById('local_video')
-				photo.width=videoWidth;
-				photo.height=videoHeight;
-				var photoContext=photo.getContext('2d');
-				//var img = photoContext.drawImage(localMediaStream,400,400);
-				if(video){
-					//rvideoImageContext.drawImage(video,0,0,160,120);
-					photoContext.drawImage(video,0,0,videoWidth,videoHeight);
-					//var img = photoContext.getImageData(0,0,160,120);
-					//console.log('img',img);
-					//var imgUrl = rvideoImageCanvas.toDataURL('image/jpeg');
-					//不用存，传输数据流
-					var imgUrl = photo.toDataURL('image/jpg');
-					//console.log('photrvideoImageCanvas',imgUrl);
-					socket2.emit('img',{
-						id: nowClient,
-						url: imgUrl
-					})
+		// 	//如果本地视频流已经成功加载
+		// 	if(localMediaStream){
 
+		// 		var photo=document.getElementById('photo');
+		// 		var video = document.getElementById('local_video')
+		// 		photo.width=videoWidth;
+		// 		photo.height=videoHeight;
+		// 		var photoContext=photo.getContext('2d');
 
-				}
-				// loadObj('images/','man').then(obj=>{
-				// 	let man=obj.children[0];
-				// 	man.scale.set(4,4,4);
-				// 	console.log('正在加载')
-				// 	newModel = man;
-				// 	if(oldModel!=newModel){
-				// 		self.playerGroup.children[3] = newModel;
+		// 		if(video){
+		// 			//rvideoImageContext.drawImage(video,0,0,160,120);
+		// 			photoContext.drawImage(video,0,0,videoWidth,videoHeight);
 
-				// 		//初始oldModel为null
-				// 		oldModel = newModel
-				// 	}
-	
-				// }
-				// ,onError
-				// )
+		// 			//var img = photoContext.getImageData(0,0,160,120);
 
-			}
-		}
+		// 			//var imgUrl = rvideoImageCanvas.toDataURL('image/jpeg');
+		// 			//不用存，传输数据流
+		// 			var imgUrl = photo.toDataURL('image/png');
+		// 			console.log('photrvideoImageCanvas',imgUrl);
+		// 			// socket2.emit('img',{
+		// 			// 	id: nowClient,
+		// 			// 	url: imgUrl
+		// 			// })
+
+		// 		}
+		// 	}
+		// }
 
 		let canUpdate = true;
 		for (let _id in clients) {
@@ -481,7 +368,7 @@ class Scene {
 		// 终于统一了video标签和canvas标签
 		let localVideo = document.getElementById("local_video");
 		let localVideoCanvas = document.getElementById("local_canvas");
-		this.redrawVideoCanvas(localVideo, localVideoCanvas, this.playerVideoTexture)
+		this.predictWebcam(localVideo, localVideoCanvas, this.playerVideoTexture)
 
 
 		for (let _id in clients) {
@@ -499,7 +386,7 @@ class Scene {
 			}
 
 
-			this.redrawVideoCanvas(remoteVideo, remoteVideoCanvas, clients[_id].texture);
+			this.predictWebcam(remoteVideo, remoteVideoCanvas, clients[_id].texture);
 		}
 	}
 
@@ -507,16 +394,46 @@ class Scene {
 	redrawVideoCanvas(_videoEl, _canvasEl, _videoTex) {
 		if(_videoTex) {
 			let _canvasDrawingContext = _canvasEl.getContext('2d');
+			//processSegmentation
+			
 
 			// 检查video元素上是否有足够的数据来重画画布
-			if (_videoEl.readyState === _videoEl.HAVE_ENOUGH_DATA) {
-				//视频元素变成了贴图
-				_canvasDrawingContext.drawImage(_videoEl, 0, 0, _canvasEl.width, _canvasEl.height);
-				//向three.js指示需要从画布上重绘纹理
-				_videoTex.needsUpdate = true;
-			}
+			// if (_videoEl.readyState === _videoEl.HAVE_ENOUGH_DATA) {
+			// 	//视频元素变成了贴图
+			// 	_canvasDrawingContext.drawImage(_videoEl, 0, 0, _canvasEl.width, _canvasEl.height);
+			// 	//向three.js指示需要从画布上重绘纹理
+			// 	_videoTex.needsUpdate = true;
+			// }
 		}
 
+	}
+
+ 	// 关键步骤，循环预测
+	predictWebcam(_videoEl ,_canvasEl ,_videoTex){
+		if (previousSegmentationComplete && _videoTex) {
+			// 临时canvas,previousSegmentationComplete表示前面已经处理完了
+			//在此处得到了视频中的画面图片,只是为了用来分割的
+			let canvasCtx = _canvasEl.getContext('2d');
+			let tmpCanvas = document.createElement('canvas');
+
+			tmpCanvas.width = videoWidth;
+			tmpCanvas.height = videoHeight;
+			let tmpCanvasCtx = tmpCanvas.getContext('2d');
+
+			tmpCanvasCtx.drawImage(_videoEl, 0, 0, videoWidth, videoHeight);
+			//canvasCtx.drawImage(_videoEl, 0, 0, _canvasEl.width, _canvasEl.height);
+			previousSegmentationComplete = false;
+	  
+			// Now classify the canvas image we have available.
+			model.segmentPersonParts(tmpCanvas, segmentationProperties).then(function(segmentation) {
+			  //console.log(segmentation);
+			  processSegmentation(canvasCtx, tmpCanvasCtx,segmentation);
+			  previousSegmentationComplete = true;
+			  _videoTex.needsUpdate = true
+			});
+		  }
+		 // 是否需要在这里循环呢？？已经有一个线程了
+		 //window.requestAnimationFrame(predictWebcam);
 	}
 
 	//////////////////////////////////////////////////////////////////////
@@ -541,29 +458,6 @@ class Scene {
 		event = event || window.event;
 		this.keyState[event.keyCode || event.which] = false;
 	}
-	updateObj(id){
-		let localVideo = document.getElementById("local_video");
-		let localVideoCanvas = document.getElementById("local_canvas");
-		let self = this;
-		loadObj('images/',id).then(obj=>{
-			let man=obj.children[0];
-			let position = self.getPlayerPosition()
-			man.scale.set(4,4,4);
-			man.position.set(position[0][0]+8,position[0][1]+6,position[0][2]);
-			console.log('正在加载')
-			newModel = man;
-
-			if(oldModel.normalMatrix.elements[0]!=newModel.normalMatrix.elements[0]){
-				selfObj.children[3] = newModel;
-				//初始oldModel为null
-				oldModel = newModel
-				self.redrawVideoCanvas(localVideo, localVideoCanvas, self.playerVideoTexture)
-			}
-	
-		}
-		,onError
-		)	
-	  }
 
 }
 
@@ -612,7 +506,7 @@ function removeClientVideoElementAndCanvas(_id) {
 	if (canvasEl != null) { canvasEl.remove(); }
 }
 
-// https://github.com/zacharystenger/three-js-video-chat，制作视频纹理贴图
+//制作视频纹理贴图
 function makeVideoTextureAndMaterial(_id) {
 	// 直接创建了canvas元素
 	let rvideoImageCanvas = document.createElement('canvas');
@@ -639,50 +533,7 @@ function makeVideoTextureAndMaterial(_id) {
 	//返回的就是视频纹理和电影材质
 	return [videoTexture, movieMaterial];
 }
-//绘制房间
-function CreateRoom(URL){
-	var roomGeometry = new THREE.Geometry();
 
-	var loader = new THREE.TextureLoader();
-	var texture = loader.load(URL);
-	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-	texture.repeat.set(20, 20);
-
-	var boxGeometry1 = new THREE.BoxGeometry(20, 1, 20);
-	var boxGeometry2 = new THREE.BoxGeometry(0.5, 5, 20.5);
-	var boxGeometry3 = new THREE.BoxGeometry(0.5, 5, 20.5);
-	var boxGeometry4 = new THREE.BoxGeometry(20.5, 5, 0.5);
-	var boxGeometry5 = new THREE.BoxGeometry(20.5, 5, 0.5);
-
-	var boxMesh1 = new THREE.Mesh(boxGeometry1);
-	boxMesh1.position.y = -0.5;
-	boxMesh1.updateMatrix();
-	roomGeometry.merge(boxMesh1.geometry, boxMesh1.matrix);
-
-	var boxMesh2 = new THREE.Mesh(boxGeometry2);
-	boxMesh2.position.set(10, 0, 0);
-	boxMesh2.updateMatrix();
-	roomGeometry.merge(boxMesh2.geometry, boxMesh2.matrix);
-
-	var boxMesh3 = new THREE.Mesh(boxGeometry3);
-	boxMesh3.position.set(-10, 0, 0);
-	boxMesh3.updateMatrix();
-	roomGeometry.merge(boxMesh3.geometry, boxMesh3.matrix);
-
-	var boxMesh4 = new THREE.Mesh(boxGeometry4);
-	boxMesh4.position.set(0, 0, 10);
-	boxMesh4.updateMatrix();
-	roomGeometry.merge(boxMesh4.geometry, boxMesh4.matrix);
-
-	var boxMesh5 = new THREE.Mesh(boxGeometry5);
-	boxMesh5.position.set(0, 0, -10);
-	boxMesh5.updateMatrix();
-	roomGeometry.merge(boxMesh5.geometry, boxMesh5.matrix);
-
-	var roomMaterial = new THREE.MeshPhongMaterial({ map:texture, color:0xffffff, specular:0xffffff, shininess: 10});
-	return new THREE.Mesh(roomGeometry, roomMaterial);
-
-}
 //绘制精灵
 function drawSprite(  text2d, scale, color, x, y, z){
 	var texture = canvasMultilineText( text2d, { backgroundColor: color }, 'rgba(155, 187, 89, 1)'  );
@@ -695,6 +546,7 @@ function drawSprite(  text2d, scale, color, x, y, z){
 	return sprite;
 }
 
+//绘制文字
 function canvasMultilineText(textArray, parameters, rgba){
 	parameters = parameters || {} ;
 	var width = 0;
@@ -733,25 +585,6 @@ function canvasMultilineText(textArray, parameters, rgba){
 
 }
 
-//绘制桌子
-function CreateTable(URL){
-
-	var loader = new THREE.TextureLoader();
-	var texture = loader.load(URL);
-	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-	texture.repeat.set(20, 20);
-
-	var boxGeometry1 = new THREE.BoxGeometry(5, 2, 5);
-
-	var boxMesh1 = new THREE.Mesh(boxGeometry1);
-	boxMesh1.position.set(10, 8, 0)
-
-
-	var roomMaterial = new THREE.MeshPhongMaterial({ map:texture, color:0xffffff, specular:0xffffff, shininess: 10});
-	return new THREE.Mesh(boxGeometry1, roomMaterial);
-
-}
-
 function loadObj(path ,id){
 	let loder = new THREE.OBJLoader()
 	return new Promise((resolve,reject)=>{
@@ -775,63 +608,6 @@ function onError(error) {
 	console.log( '加载失败:' ,error);
 }
 
-function loadMtl(path ,id){
-	
-	// let manager = new THREE.LoadingManager();
-	// //dds纹理
-	// let DDSLoader = new THREE.DDSLoader();
-	// manager.addHandler( /\.dds$/i, );	
-
-	let mtlLoader = new THREE.MTLLoader();
-
-	return new Promise((resolve,reject)=>{
-		mtlLoader
-		.load('images/worker.mtl',function(materials){
-			console.log(materials);
-			materials.preload();
-
-			let loder = new THREE.OBJLoader()
-				loder.setMaterials( materials )
-				.setPath(path)
-				.load(
-					//资源链接
-					id + '.obj',
-					function (obj) {
-						console.log(obj+'模型加载成功了')
-						resolve(obj);
-					}
-					,onProgress
-					,onError
-				)		
-		}			
-)
-	}) 	
-}
-
-function loadFbx(path,id){
-	let fbxLoader = new THREE.FBXLoader();
-	
-	return new Promise((resolve,reject)=>{
-		fbxLoader.load('images/worker.fbx',function(obj){
-			console.log(obj+'模型加载成功了');
-			resolve(obj);			
-		})
-	})
-}
-
-function loadGlb(path,id){
-	let glbLoader = new THREE.GLTFLoader();
-	
-	return new Promise((resolve,reject)=>{
-		glbLoader.load('images/worker.gltf',function(obj){
-			console.log(obj+'模型加载成功了');
-			resolve(obj);			
-		}
-		,onProgress
-		,onError
-		)
-	})
-}
 
 function loadDracoMesh(dracoFile) {
 	dracoLoader.load(dracoFile, function ( geometry ) {
@@ -843,5 +619,33 @@ function loadDracoMesh(dracoFile) {
 	  mesh.receiveShadow = true;
 	  scene.add( mesh );
 	} );
+  }
+
+   //canvas上下文的分割数据
+ function processSegmentation(canvasCtx, temptCtx ,segmentation) {
+	
+	var imageData = canvasCtx.getImageData(0, 0, videoWidth, videoHeight);
+	var originData = temptCtx.getImageData(0, 0, videoWidth, videoHeight);
+	var odata = originData.data;
+	var data = imageData.data;
+	
+   //1.注意data数据的格式，每隔4个是一个RGBA数据  2.此处实现了分割的目的
+   let n = 0;
+   for (let i = 0; i < data.length; i += 4) {
+     if (segmentation.data[n] !== -1) {
+       data[i] = odata[i];     // red
+       data[i + 1] = odata[i + 1]; // green
+       data[i + 2] = odata[i + 2]; // blue
+       data[i + 3] = odata[i + 3]; // alpha
+     } else {
+       data[i] = 0;    
+       data[i + 1] = 0;
+       data[i + 2] = 0;
+       data[i + 3] = 0;
+     }
+
+     n++;
+   }
+   canvasCtx.putImageData(imageData, 0, 0);
   }
 
