@@ -168,7 +168,7 @@ function initSocketConnection() {
 
 
 	//终于成功连接上了！！！解决了技术难题，可以通信了！！，关键在于重新创建一个连接！！
-	socket2 = io.connect("wss://104.197.35.214:3000", {'force new connection': true });
+	// socket2 = io.connect("wss://104.197.35.214:3000", {'force new connection': true });
 	//socket2 = io.connect("wss://localhost:3000",{'force new connection': true });
 	//socket2 = io.connect("wss://35.192.30.220:3000", {'force new connection': true });
 
@@ -177,9 +177,9 @@ function initSocketConnection() {
 
 	socket.on('connect', () => { });
 
-	socket2.on('connect', () => {
-		console.log(' 图片传输端口连接成功')
-	  });
+	// socket2.on('connect', () => {
+	// 	console.log(' 图片传输端口连接成功')
+	//   });
 	  
 	//socket2.emit('CH01', 'me', 'test msg');
 	//socket2.emit("message", "HELLO INCLUDE HELP");
@@ -302,9 +302,9 @@ function initSocketConnection() {
 	});
 
 
-	socket2.on('completed',res=>{
-		console.log('obj连接成功',res);
-	})
+	// socket2.on('completed',res=>{
+	// 	console.log('obj连接成功',res);
+	// })
 }
 
 

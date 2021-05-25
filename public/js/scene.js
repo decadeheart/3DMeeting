@@ -27,7 +27,6 @@ class Scene {
 		this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 1, 5000);
 		//this.camera.position.set(5, 20, 15);
 
-		
 		//增加播放器
 		this.addSelf();
 
@@ -46,7 +45,7 @@ class Scene {
 		roomLoader.setDRACOLoader(dracoLoader);
 		roomLoader.load(
 			//资源链接
-			'images/room3Draco.gltf',
+			'images/room4Draco.gltf',
 			function (glb) {
 				let building = glb.scene;
 				self.scene.add(building);
@@ -169,14 +168,15 @@ class Scene {
 
 		// let x = Math.ceil(Math.random()*10); 
 		// let y = Math.ceil(Math.random()*10); 
-		let x = -0.8193844556808472
+		let x = -3.4371676445007324
 		let y = 3.1371405124664307
 
 		// 设置头部位置
 		_body.position.set(x, 1, y);
 		_head.position.set(x, 10, y);
 		//console.log('top',top)
-		this.camera.position.set(x, 22, y);
+		this.camera.position.set(x, 10, y);
+		console.log('this.camera',this.camera.rotation);
 		// https://threejs.org/docs/index.html#api/en/objects/Group
 		
 		//self.playerGroup.position.set(0, 0.5, 0);
@@ -247,12 +247,11 @@ class Scene {
 			caizhi2
 		);
 
-		let y = -0.8193844556808472
-		let x = 3.1371405124664307 
+		let y = 3.1371405124664307
+		let x = 26.74837303161621
 
 		_body.position.set(x, 1, y);
 		_head.position.set(x, 10, y);
-		this.camera.position.set(x, 22, y);
 		// https://threejs.org/docs/index.html#api/en/objects/Group
 
 		var group = new THREE.Group();
@@ -410,14 +409,28 @@ class Scene {
 		// 终于统一了video标签和canvas标签
 		let localVideo = document.getElementById("local_video");
 		let localVideoCanvas = document.getElementById("local_canvas");
+		let self =this;
 		this.predictWebcam(localVideo, localVideoCanvas, this.playerVideoTexture)
 		if (this.isRoomLoaded && this.playerVideoTexture && modelHasLoaded) {
 			renderPrediction(localVideo)
-			console.log('faceFlag',faceFlag)
+			
+			if(faceFlag) {
+				console.log('faceFlag',faceFlag)
+					if(faceFlag == "RIGHT") {
+						//第一列，第二列往下,第三列往右
+						self.camera.lookAt(11.99665355682373,5.791983604431152,10.77586030960083);
+					}else if(faceFlag == "LEFT") {
+						self.camera.lookAt(11.99665355682373,5.791983604431152,-2.77586030960083);
+					}
+				//绘制文字精灵
+				let directionSprite = drawSprite( faceFlag, 0.02, '#DC143C', 6, 11, 0);
+				directionSprite.material.needsUpdate = true;
+				self.scene.add( directionSprite );
+			}
 		}
 
 
-		/******* 下面是其他用户处理*************** */
+		/******* 下面是其他用户处理****************/
 		for (let _id in clients) {
 			let remoteVideo = document.getElementById(_id);
 			let remoteVideoCanvas = document.getElementById(_id + "_canvas");
@@ -453,24 +466,6 @@ class Scene {
 		}
 	}
 
-	//这个函数从一个<video>重新绘制一个2D <canvas>，并指示到three.js，名字的含义就是重新绘制canvas
-	redrawVideoCanvas(_videoEl, _canvasEl, _videoTex) {
-		if(_videoTex) {
-			let _canvasDrawingContext = _canvasEl.getContext('2d');
-			//processSegmentation
-			
-
-			// 检查video元素上是否有足够的数据来重画画布
-			// if (_videoEl.readyState === _videoEl.HAVE_ENOUGH_DATA) {
-			// 	//视频元素变成了贴图
-			// 	_canvasDrawingContext.drawImage(_videoEl, 0, 0, _canvasEl.width, _canvasEl.height);
-			// 	//向three.js指示需要从画布上重绘纹理
-			// 	_videoTex.needsUpdate = true;
-			// }
-		}
-
-	}
-
  	// 关键步骤，循环预测
 	predictWebcam(_videoEl ,_canvasEl ,_videoTex){
 		let flag = true;
@@ -498,12 +493,12 @@ class Scene {
 					//console.log(segmentation.allPoses[0].keypoints[1].position);
 					//console.log(segmentation.allPoses[0].keypoints[2].position);
 					//console.log(segmentation.allPoses[0])
-					socket2.emit('img',{
-						id: nowClient,
-						left: segmentation.allPoses[0].keypoints[1].position,
-						right: segmentation.allPoses[0].keypoints[2].position,
-						url: imgUrl
-					})
+					// socket2.emit('img',{
+					// 	id: nowClient,
+					// 	left: segmentation.allPoses[0].keypoints[1].position,
+					// 	right: segmentation.allPoses[0].keypoints[2].position,
+					// 	url: imgUrl
+					// })
 				}
 				processSegmentation(canvasCtx, tmpCanvasCtx,segmentation);
 				flag = true;
@@ -614,7 +609,7 @@ function makeVideoTextureAndMaterial(_id) {
 
 //绘制精灵
 function drawSprite(  text2d, scale, color, x, y, z){
-	var texture = canvasMultilineText( text2d, { backgroundColor: color }, 'rgba(155, 187, 89, 1)'  );
+	var texture = canvasMultilineText( text2d, { backgroundColor: color }, '#FFFF00'  );
 	var spriteMaterial = new THREE.SpriteMaterial( { map: texture, opacity: 0.9 } );
 	var sprite = new THREE.Sprite( spriteMaterial );
 	sprite.position.set( x, y, z );
@@ -651,7 +646,7 @@ function canvasMultilineText(textArray, parameters, rgba){
 	context.font = parameters.font ? parameters.font : '48px sans-serif';
 
 	for (var j = 0; j < len; j++) {
-		context.fillStyle = '#1920E6';
+		context.fillStyle = '#DC143C';
 		context.fillText( textArray[j], 10, 48  + j * 60 );
 	}
 

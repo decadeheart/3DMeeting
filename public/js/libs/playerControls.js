@@ -139,7 +139,7 @@ THREE.PlayerControls = function (camera, player, domElement) {
 		// this.camera.position.y = this.player.position.y + 40;
 		// this.camera.position.z = this.player.position.z + 20;
 
-		this.camera.lookAt(3.8043372631073,5.791983604431152,0.5638086199760437);
+		this.camera.lookAt(11.99665355682373,5.791983604431152,4.77586030960083);
 
 	};
 
@@ -188,7 +188,7 @@ THREE.PlayerControls = function (camera, player, domElement) {
 
 		}
 
-		this.camera.lookAt(3.8043372631073,5.791983604431152,0.5638086199760437);
+		this.camera.lookAt(11.99665355682373,5.791983604431152,4.77586030960083);
 
 		thetaDelta = 0;
 		phiDelta = 0;
