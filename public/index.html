@@ -10,21 +10,29 @@
 	<script crossorigin="anonymous" integrity="sha512-YybopSVjZU0fe8TY4YDuQbP5bhwpGBE/T6eBUEZ0usM72IWBfWrgVI13qfX4V2A/W7Hdqnm7PIOYOwP9YHnICw==" src="https://lib.baomitu.com/socket.io/3.1.2/socket.io.js"></script>
 	<script src="js/libs/three.min.js"></script>
 	<script src="js/libs/playerControls.js"></script>
-	<script src="js/libs/FirstPersonControls.js"></script>
-	<script src="js/libs/OBJLoader.js"></script>
 	<script src="js/libs/gltf-loader.js"></script>
-	<script src="js/libs/MTLLoader.js"></script>
-	<script src="js/libs/DDSLoader.js"></script>
-	<script src="js/libs/fflate.min.js"></script>
-	<script src="js/libs/FBXLoader.js"></script>
 	<script src="js/scene.js"></script>
 	<script src="js/index.js"></script>
-	<script src="https://rawgit.com/google/draco/master/javascript/example/DRACOLoader.js"></script>
+	<!-- <script src="https://rawgit.com/google/draco/master/javascript/example/DRACOLoader.js"></script> -->
+	<script src="js/libs/draco_decoder.js"></script>
     <!-- Import TensorFlow.js library -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js" type="text/javascript"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js" type="text/javascript"></script> -->
+
+	<!-- Require the peer dependencies of face-landmarks-detection. -->
+	<script src="https://unpkg.com/@tensorflow/tfjs-core@2.4.0/dist/tf-core.js"></script>
+	<script src="https://unpkg.com/@tensorflow/tfjs-converter@2.4.0/dist/tf-converter.js"></script>
+
+	<!-- You must explicitly require a TF.js backend if you're not using the tfjs union bundle. -->
+	<script src="https://unpkg.com/@tensorflow/tfjs-backend-webgl@2.4.0/dist/tf-backend-webgl.js"></script>
+	<!-- Alternatively you can use the WASM backend: <script src="https://unpkg.com/@tensorflow/tfjs-backend-wasm@2.4.0/dist/tf-backend-wasm.js"></script> -->
+
+	<!-- Require face-landmarks-detection itself. -->
+	<!-- <script src="https://unpkg.com/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.js"></script> -->
+	<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.1/dist/face-landmarks-detection.min.js"></script>
 
     <!-- Load the bodypix model to recognize body parts in images -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.0"></script>
+
 	<style>
 		body {
 			overflow: hidden;

@@ -18,6 +18,7 @@ class Scene {
 
 		this.scene = new THREE.Scene();
 		this.keyState = {};
+		this.isRoomLoaded = false;
 
 		this.width = _width;
 		this.height = _height;
@@ -49,7 +50,8 @@ class Scene {
 			function (glb) {
 				let building = glb.scene;
 				self.scene.add(building);
-				console.log('building',building);		
+				console.log('building',building);
+				self.isRoomLoaded = true;		
 			},
 			onProgress,
 			onError
@@ -118,12 +120,28 @@ class Scene {
 
 	addSelf() {
 		let text2d=content;
+		var mesh = new THREE.MeshPhongMaterial({
+            specular: 0xffffff,
+            color: 0x7777ff,
+			opacity: 0, 
+			transparent: true
+        });
+
 		let texture = canvasMultilineText( text2d, { backgroundColor: 0xffffff}, 'rgba(155, 187, 89, 1)'  );
-		let wordMaterial = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.9 } );
+
+        var caizhi = [
+			new THREE.MeshPhongMaterial({map:texture}),
+            mesh,
+            mesh,
+            mesh,
+            mesh,
+            mesh
+        ];
+		//let wordMaterial = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.9 } );
 
 		let _body = new THREE.Mesh(
-			new THREE.BoxGeometry(4, 4, 4),
-			wordMaterial
+			new THREE.BoxGeometry(10, 4, 10),
+			caizhi
 		);
 
 		//创建自身媒体流元素，videoElement已经绑定了本地媒体流
@@ -131,9 +149,18 @@ class Scene {
 		//video  <video> element --> <canvas> --> videoTexture --> videoMaterial  THREE.js
 		let [videoTexture, videoMaterial] = makeVideoTextureAndMaterial("local");
 
+		var caizhi2 = [
+            videoMaterial,
+            mesh,
+            mesh,
+            mesh,
+            mesh,
+            mesh
+        ];
+
 		let _head = new THREE.Mesh(
-			new THREE.BoxGeometry(4, 4, 4),
-			videoMaterial
+			new THREE.BoxGeometry(10, 10, 10),
+			caizhi2
 		);
 
 		this.playerGroup = new THREE.Group();
@@ -147,9 +174,9 @@ class Scene {
 
 		// 设置头部位置
 		_body.position.set(x, 1, y);
-		_head.position.set(x, 5, y);
+		_head.position.set(x, 10, y);
 		//console.log('top',top)
-		this.camera.position.set(x, 15, y);
+		this.camera.position.set(x, 22, y);
 		// https://threejs.org/docs/index.html#api/en/objects/Group
 		
 		//self.playerGroup.position.set(0, 0.5, 0);
@@ -164,65 +191,86 @@ class Scene {
 
 	}
 
-	// 视频纹理，区分信令里的方法
-	addClient(_id) {
+	// 视频纹理，区分信令里的方法,此处终于学会了await的用法
+	async addClient(_id) {
 
 		//async 异步执行解决大问题！！
-		socket.on('getAllName', async _clientProps => {
+		await socket.on('getAllName',  _clientProps => {
 
 			clients[_id].name = _clientProps[_id].name;
 		});
 
 		//添加姓名
 		let text2d='其他人';
+		var mesh = new THREE.MeshPhongMaterial({
+            specular: 0xffffff,
+            color: 0x7777ff,
+			opacity: 0, 
+			transparent: true
+        });
+
 		let texture = canvasMultilineText( text2d, { backgroundColor: 0xffffff}, 'rgba(155, 187, 89, 1)'  );
-		let wordMaterial = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.9 } );
+
+        var caizhi = [
+			
+            mesh,
+			new THREE.MeshPhongMaterial({map:texture}),
+            mesh,
+            mesh,
+            mesh,
+            mesh
+        ];
 		let _body = new THREE.Mesh(
-			new THREE.BoxGeometry(4, 4, 4),
-			wordMaterial
+			new THREE.BoxGeometry(10, 4, 10),
+			caizhi
 		);
 
 		//使用客户端ID创建的<video>元素
 		createClientVideoElement(_id);
 
 		let [videoTexture, videoMaterial] = makeVideoTextureAndMaterial(_id);
+		var caizhi2 = [
+            
+            mesh,  //1是前
+			videoMaterial,
+            mesh,
+			
+            mesh,   //3是上
+			
+            mesh,   //4是下
+            mesh,
+			  //6是右
+        ];
 
 		let _head = new THREE.Mesh(
-			new THREE.BoxGeometry(4, 4, 4),
-			videoMaterial
+			new THREE.BoxGeometry(10, 10, 10),
+			caizhi2
 		);
 
-		let x = Math.ceil(Math.random()*10); 
-		let y = Math.ceil(Math.random()*10); 
+		let y = -0.8193844556808472
+		let x = 3.1371405124664307 
 
 		_body.position.set(x, 1, y);
-		_head.position.set(x, 5, y);
-
+		_head.position.set(x, 10, y);
+		this.camera.position.set(x, 22, y);
 		// https://threejs.org/docs/index.html#api/en/objects/Group
 
 		var group = new THREE.Group();
 		var self = this;
+		group.add(_body);
+		group.add(_head);
 
-		loadObj('images/','man').then(obj=>{
-			obj.children[0].material.color.set(0xe8b73b);
-			let man=obj.children[0];
-			man.scale.set(0.03,0.03,0.03);
-			man.position.set(x, 8, y);
-			group.add(_body);
-			group.add(_head);
-			group.add(man);
+		self.scene.add(group);
+		clients[_id].group = group;
+		//console.log('group',_id,group);
+		clients[_id].texture = videoTexture;
+		clients[_id].desiredPosition = new THREE.Vector3();
+		clients[_id].desiredRotation = new THREE.Quaternion();
+		clients[_id].oldPos = group.position
+		clients[_id].oldRot = group.quaternion;
+		clients[_id].movementAlpha = 0;
+		clients[_id].isLoaded = true;	
 
-			self.scene.add(group);
-			clients[_id].group = group;
-			//console.log('group',_id,group);
-			clients[_id].texture = videoTexture;
-			clients[_id].desiredPosition = new THREE.Vector3();
-			clients[_id].desiredRotation = new THREE.Quaternion();
-			clients[_id].oldPos = group.position
-			clients[_id].oldRot = group.quaternion;
-			clients[_id].movementAlpha = 0;
-			clients[_id].isLoaded = true;	
-		})
 	}
 
 	removeClient(_id) {
@@ -308,6 +356,8 @@ class Scene {
 			}
 		}
 		if (sendStats) { this.movementCallback(); }
+		//更新声音
+		//this.updateClientVolumes();
 
 		//控制刷新率
 		// if (this.frameCount % 20 === 0) {
@@ -316,13 +366,6 @@ class Scene {
 
 		// 	//如果本地视频流已经成功加载
 		// 	if(localMediaStream){
-
-		// 		var photo=document.getElementById('photo');
-		// 		var video = document.getElementById('local_video')
-		// 		photo.width=videoWidth;
-		// 		photo.height=videoHeight;
-		// 		var photoContext=photo.getContext('2d');
-
 		// 		if(video){
 		// 			//rvideoImageContext.drawImage(video,0,0,160,120);
 		// 			photoContext.drawImage(video,0,0,videoWidth,videoHeight);
@@ -337,8 +380,6 @@ class Scene {
 		// 			// 	id: nowClient,
 		// 			// 	url: imgUrl
 		// 			// })
-
-		// 		}
 		// 	}
 		// }
 
@@ -350,7 +391,8 @@ class Scene {
 		}
 		if(canUpdate){
 			this.updatePositions();
-
+			//更新声音
+			this.updateClientVolumes();
 		}
 		this.controls.update();
 		this.render();
@@ -369,8 +411,13 @@ class Scene {
 		let localVideo = document.getElementById("local_video");
 		let localVideoCanvas = document.getElementById("local_canvas");
 		this.predictWebcam(localVideo, localVideoCanvas, this.playerVideoTexture)
+		if (this.isRoomLoaded && this.playerVideoTexture && modelHasLoaded) {
+			renderPrediction(localVideo)
+			console.log('faceFlag',faceFlag)
+		}
 
 
+		/******* 下面是其他用户处理*************** */
 		for (let _id in clients) {
 			let remoteVideo = document.getElementById(_id);
 			let remoteVideoCanvas = document.getElementById(_id + "_canvas");
@@ -380,9 +427,25 @@ class Scene {
 			//console.log('clients[_id].name',clients[_id].name)
 			if(clients[_id].name&&clients[_id].group){
 				let text2d=clients[_id].name;
+				let mesh = new THREE.MeshPhongMaterial({
+					specular: 0xffffff,
+					color: 0x7777ff,
+					opacity: 0, 
+					transparent: true
+				});
+		
 				let texture = canvasMultilineText( text2d, { backgroundColor: 0xffffff}, 'rgba(155, 187, 89, 1)'  );
-				let wordMaterial = new THREE.MeshBasicMaterial( { map: texture, opacity: 0.9 } );
-				clients[_id].group.children[0].material = wordMaterial;
+		
+				var caizhi = [
+					
+					mesh,
+					new THREE.MeshPhongMaterial({map:texture}),
+					mesh,
+					mesh,
+					mesh,
+					mesh
+				];
+				clients[_id].group.children[0].material = caizhi;
 			}
 
 
@@ -410,8 +473,10 @@ class Scene {
 
  	// 关键步骤，循环预测
 	predictWebcam(_videoEl ,_canvasEl ,_videoTex){
-		if (previousSegmentationComplete && _videoTex) {
-			// 临时canvas,previousSegmentationComplete表示前面已经处理完了
+		let flag = true;
+		let self = this;
+		if (flag && _videoTex) {
+			// 临时canvas,flag表示前面已经处理完了
 			//在此处得到了视频中的画面图片,只是为了用来分割的
 			let canvasCtx = _canvasEl.getContext('2d');
 			let tmpCanvas = document.createElement('canvas');
@@ -421,19 +486,31 @@ class Scene {
 			let tmpCanvasCtx = tmpCanvas.getContext('2d');
 
 			tmpCanvasCtx.drawImage(_videoEl, 0, 0, videoWidth, videoHeight);
-			//canvasCtx.drawImage(_videoEl, 0, 0, _canvasEl.width, _canvasEl.height);
-			previousSegmentationComplete = false;
+
+			flag = false;
 	  
-			// Now classify the canvas image we have available.
+			//根据视频流得到分割数据，外面和内部的刷新频率不一样，所以要使用tmpCanvas进行过渡
 			model.segmentPersonParts(tmpCanvas, segmentationProperties).then(function(segmentation) {
-			  //console.log(segmentation);
-			  processSegmentation(canvasCtx, tmpCanvasCtx,segmentation);
-			  previousSegmentationComplete = true;
-			  _videoTex.needsUpdate = true
+
+				var imgUrl = tmpCanvas.toDataURL('image/png');
+
+				if (self.isRoomLoaded && segmentation.allPoses[0] && segmentation.allPoses[0].keypoints[1].score > 0.995) {
+					//console.log(segmentation.allPoses[0].keypoints[1].position);
+					//console.log(segmentation.allPoses[0].keypoints[2].position);
+					//console.log(segmentation.allPoses[0])
+					socket2.emit('img',{
+						id: nowClient,
+						left: segmentation.allPoses[0].keypoints[1].position,
+						right: segmentation.allPoses[0].keypoints[2].position,
+						url: imgUrl
+					})
+				}
+				processSegmentation(canvasCtx, tmpCanvasCtx,segmentation);
+				flag = true;
+				_videoTex.needsUpdate = true
 			});
+
 		  }
-		 // 是否需要在这里循环呢？？已经有一个线程了
-		 //window.requestAnimationFrame(predictWebcam);
 	}
 
 	//////////////////////////////////////////////////////////////////////
@@ -521,7 +598,7 @@ function makeVideoTextureAndMaterial(_id) {
 	let rvideoImageContext = rvideoImageCanvas.getContext('2d');
 
 	// 第一次的背景纹理填充，第二次被视频替代
-	rvideoImageContext.fillStyle = '#000000';
+	rvideoImageContext.fillStyle = '#ffffff';
 	rvideoImageContext.fillRect(0, 0, rvideoImageCanvas.width, rvideoImageCanvas.height);
 
 	// 制作纹理,第一次的纹理
@@ -529,7 +606,8 @@ function makeVideoTextureAndMaterial(_id) {
 	videoTexture.minFilter = THREE.LinearFilter;
 	videoTexture.magFilter = THREE.LinearFilter;
 
-	var movieMaterial = new THREE.MeshBasicMaterial({ map: videoTexture, overdraw: true, side: THREE.DoubleSide });
+	//side: THREE.DoubleSide
+	var movieMaterial = new THREE.MeshBasicMaterial({ map: videoTexture,side:THREE.FrontSide,opacity: 1, transparent: true });
 	//返回的就是视频纹理和电影材质
 	return [videoTexture, movieMaterial];
 }
@@ -638,10 +716,10 @@ function loadDracoMesh(dracoFile) {
        data[i + 2] = odata[i + 2]; // blue
        data[i + 3] = odata[i + 3]; // alpha
      } else {
-       data[i] = 0;    
-       data[i + 1] = 0;
-       data[i + 2] = 0;
-       data[i + 3] = 0;
+       data[i] = 255;    
+       data[i + 1] = 255;
+       data[i + 2] = 255;
+       data[i + 3] = 1;
      }
 
      n++;
@@ -649,3 +727,89 @@ function loadDracoMesh(dracoFile) {
    canvasCtx.putImageData(imageData, 0, 0);
   }
 
+async function renderPrediction(video) {
+	const predictions = await faceModel.estimateFaces({
+		input: video,
+		returnTensors: false,
+		flipHorizontal: false,
+		predictIrises: true,
+	});
+	//console.log(predictions);
+	if (predictions.length > 0) {
+		predictions.forEach((prediction) => {
+		//左眼x坐标
+		positionXLeftIris = prediction.annotations.leftEyeIris[0][0];
+		//左眼y坐标
+		positionYLeftIris = prediction.annotations.leftEyeIris[0][1];
+
+		//脸部底部x坐标
+		const faceBottomLeftX =
+			video.width - prediction.boundingBox.bottomRight[0]; // face is flipped horizontally so bottom right is actually bottom left.
+		const faceBottomLeftY = prediction.boundingBox.bottomRight[1];
+
+		//脸部顶部坐标
+		const faceTopRightX = video.width - prediction.boundingBox.topLeft[0]; // face is flipped horizontally so top left is actually top right.
+		const faceTopRightY = prediction.boundingBox.topLeft[1];
+
+		if (faceBottomLeftX > 0 && !isFaceRotated(prediction.annotations ,video)) {
+			const positionLeftIrisX = video.width - positionXLeftIris;
+			const normalizedXIrisPosition = normalize(
+			positionLeftIrisX,
+			faceTopRightX,
+			faceBottomLeftX
+			);
+
+			if (normalizedXIrisPosition > 0.355) {
+			faceFlag = "RIGHT";
+			} else if (normalizedXIrisPosition < 0.315) {
+			faceFlag = "LEFT";
+			} else {
+			amountStraightEvents++;
+			if (amountStraightEvents > 8) {
+				faceFlag = "STRAIGHT";
+				amountStraightEvents = 0;
+			}
+			}
+
+			const normalizedYIrisPosition = normalize(
+			positionYLeftIris,
+			faceTopRightY,
+			faceBottomLeftY
+			);
+
+			if (normalizedYIrisPosition > 0.62) {
+			faceFlag = "TOP";
+			}
+		}
+		});
+	}
+	return faceFlag;
+}
+
+const normalize = (val, max, min) =>
+  Math.max(0, Math.min(1, (val - min) / (max - min)));
+
+const isFaceRotated = (landmarks ,video) => {
+  const leftCheek = landmarks.leftCheek;
+  const rightCheek = landmarks.rightCheek;
+  const midwayBetweenEyes = landmarks.midwayBetweenEyes;
+
+  const xPositionLeftCheek = video.width - leftCheek[0][0];
+  const xPositionRightCheek = video.width - rightCheek[0][0];
+  const xPositionMidwayBetweenEyes = video.width - midwayBetweenEyes[0][0];
+
+  const widthLeftSideFace = xPositionMidwayBetweenEyes - xPositionLeftCheek;
+  const widthRightSideFace = xPositionRightCheek - xPositionMidwayBetweenEyes;
+
+  const difference = widthRightSideFace - widthLeftSideFace;
+
+  if (widthLeftSideFace < widthRightSideFace && Math.abs(difference) > 5) {
+    return true;
+  } else if (
+    widthLeftSideFace > widthRightSideFace &&
+    Math.abs(difference) > 5
+  ) {
+    return true;
+  }
+  return false;
+};

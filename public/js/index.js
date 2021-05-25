@@ -51,13 +51,18 @@ let mediaConstraints = {
 }
 
 
-//判定分割是否完成
-var previousSegmentationComplete = true;
 
 
 //提前先加载模型，在使用bodypix分类时必须完成加载
 var modelHasLoaded = false;
 var model = undefined;
+
+var faceModel, faceVideo, rafID;
+var amountStraightEvents = 0;
+const VIDEO_SIZE = 512;
+var positionXLeftIris;
+var positionYLeftIris;
+var faceFlag;
 
 ////////////////////////////////////////////////////////////////////////////////
 // 启动时的执行顺序
@@ -66,12 +71,29 @@ var model = undefined;
 window.onload = async () => {
 	// 首先获得媒体，webrtc接口
 	localMediaStream = await getMedia(mediaConstraints);
+	await tf.setBackend("webgl");
 
 	model = bodyPix.load(bodyPixProperties).then(function (loadedModel) {
-	model = loadedModel;
-	modelHasLoaded = true;
+		model = loadedModel;
+		
+		console.log(model)
+		show();
 	});
- 
+	
+
+	// faceModel = await faceLandmarksDetection.load(
+	//   faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
+	//   { maxFaces: 1 }
+	// );
+	faceLandmarksDetection.load(
+		faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
+		{ maxFaces: 1 }
+	).then(function (loadedModel){
+		faceModel = loadedModel;
+		console.log(faceModel)
+		modelHasLoaded = true;
+	});
+	
 
 	function show(){
 		mask.style.display = "none";
@@ -84,7 +106,7 @@ window.onload = async () => {
 		homeContent = document.getElementById('homeContent').value;
 		passContent = document.getElementById('passContent').value;
 
-		if(content&&homeContent&&modelHasLoaded){
+		if(content&&homeContent){
 			mask.style.display = "none";
 			modal.style.display = "none";
 			// 信令连接
@@ -99,7 +121,7 @@ window.onload = async () => {
 	var mask = document.getElementsByClassName("mask")[0];
 	var modal = document.getElementsByClassName("modal")[0];
 	var closes = document.getElementsByClassName("close");
-	show();
+
 	closes[0].onclick = close;
 	closes[1].onclick = close;
 	console.log("加载窗口.");
@@ -146,8 +168,8 @@ function initSocketConnection() {
 
 
 	//终于成功连接上了！！！解决了技术难题，可以通信了！！，关键在于重新创建一个连接！！
-	//socket2 = io.connect("wss://35.226.160.240:3000", {'force new connection': true });
-	socket2 = io.connect("wss://localhost:3000",{'force new connection': true });
+	socket2 = io.connect("wss://104.197.35.214:3000", {'force new connection': true });
+	//socket2 = io.connect("wss://localhost:3000",{'force new connection': true });
 	//socket2 = io.connect("wss://35.192.30.220:3000", {'force new connection': true });
 
 	//下面是错误的连接方法
@@ -303,8 +325,6 @@ function addClient(_id) {
 	// 设置已经连接真值
 	clients[_id].isAlreadyCalling = false;
 	clients[_id].isLoaded = false;
-	clients[_id].oldModel = null;
-	clients[_id].newModel = null;
 	glScene.addClient(_id);
 
 }
@@ -441,5 +461,6 @@ function createScene() {
 		clearColor = 'lightblue',
 		onPlayerMove);
 }
+
 
 
