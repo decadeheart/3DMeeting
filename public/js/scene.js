@@ -193,6 +193,7 @@ class Scene {
 
 	// 视频纹理，区分信令里的方法,此处终于学会了await的用法
 	async addClient(_id) {
+		clientNum++;
 
 		//async 异步执行解决大问题！！
 		await socket.on('getAllName',  _clientProps => {
@@ -246,9 +247,13 @@ class Scene {
 			new THREE.BoxGeometry(10, 10, 10),
 			caizhi2
 		);
-
-		let y = 3.1371405124664307
-		let x = 26.74837303161621
+		
+		let x,y;
+		console.log("clients",clientNum)
+		if(clientNum == 1) {
+			y = 3.1371405124664307
+			x = 26.74837303161621
+		}
 
 		_body.position.set(x, 1, y);
 		_head.position.set(x, 10, y);
@@ -355,32 +360,6 @@ class Scene {
 			}
 		}
 		if (sendStats) { this.movementCallback(); }
-		//更新声音
-		//this.updateClientVolumes();
-
-		//控制刷新率
-		// if (this.frameCount % 20 === 0) {
-		// 	//更新声音
-		// 	//this.updateClientVolumes();
-
-		// 	//如果本地视频流已经成功加载
-		// 	if(localMediaStream){
-		// 		if(video){
-		// 			//rvideoImageContext.drawImage(video,0,0,160,120);
-		// 			photoContext.drawImage(video,0,0,videoWidth,videoHeight);
-
-		// 			//var img = photoContext.getImageData(0,0,160,120);
-
-		// 			//var imgUrl = rvideoImageCanvas.toDataURL('image/jpeg');
-		// 			//不用存，传输数据流
-		// 			var imgUrl = photo.toDataURL('image/png');
-		// 			console.log('photrvideoImageCanvas',imgUrl);
-		// 			// socket2.emit('img',{
-		// 			// 	id: nowClient,
-		// 			// 	url: imgUrl
-		// 			// })
-		// 	}
-		// }
 
 		let canUpdate = true;
 		for (let _id in clients) {
@@ -486,21 +465,11 @@ class Scene {
 	  
 			//根据视频流得到分割数据，外面和内部的刷新频率不一样，所以要使用tmpCanvas进行过渡
 			model.segmentPersonParts(tmpCanvas, segmentationProperties).then(function(segmentation) {
-
 				var imgUrl = tmpCanvas.toDataURL('image/png');
-
-				if (self.isRoomLoaded && segmentation.allPoses[0] && segmentation.allPoses[0].keypoints[1].score > 0.995) {
-					//console.log(segmentation.allPoses[0].keypoints[1].position);
-					//console.log(segmentation.allPoses[0].keypoints[2].position);
-					//console.log(segmentation.allPoses[0])
-					// socket2.emit('img',{
-					// 	id: nowClient,
-					// 	left: segmentation.allPoses[0].keypoints[1].position,
-					// 	right: segmentation.allPoses[0].keypoints[2].position,
-					// 	url: imgUrl
-					// })
-				}
+				console.log('imgUrl',imgUrl);
 				processSegmentation(canvasCtx, tmpCanvasCtx,segmentation);
+				var imgUrl2 = _canvasEl.toDataURL('image/png');
+				console.log('imgUrl222222',imgUrl2);
 				flag = true;
 				_videoTex.needsUpdate = true
 			});
@@ -729,7 +698,7 @@ async function renderPrediction(video) {
 		flipHorizontal: false,
 		predictIrises: true,
 	});
-	//console.log(predictions);
+	console.log(predictions);
 	if (predictions.length > 0) {
 		predictions.forEach((prediction) => {
 		//左眼x坐标
@@ -737,12 +706,12 @@ async function renderPrediction(video) {
 		//左眼y坐标
 		positionYLeftIris = prediction.annotations.leftEyeIris[0][1];
 
-		//脸部底部x坐标
+		//脸部底部x坐标，脸部水平翻转，所以右下方实际上是左下角
 		const faceBottomLeftX =
 			video.width - prediction.boundingBox.bottomRight[0]; // face is flipped horizontally so bottom right is actually bottom left.
 		const faceBottomLeftY = prediction.boundingBox.bottomRight[1];
 
-		//脸部顶部坐标
+		//脸部顶部坐标,左上实际上是右上
 		const faceTopRightX = video.width - prediction.boundingBox.topLeft[0]; // face is flipped horizontally so top left is actually top right.
 		const faceTopRightY = prediction.boundingBox.topLeft[1];
 

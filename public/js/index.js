@@ -11,6 +11,7 @@ var homeContent;
 var passContent;
 // 存储threejs的变量
 let glScene;
+let clientNum=0;
 
 // WebRTC 变量:
 const { RTCPeerConnection, RTCSessionDescription } = window;
