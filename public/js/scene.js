@@ -465,11 +465,7 @@ class Scene {
 	  
 			//根据视频流得到分割数据，外面和内部的刷新频率不一样，所以要使用tmpCanvas进行过渡
 			model.segmentPersonParts(tmpCanvas, segmentationProperties).then(function(segmentation) {
-				var imgUrl = tmpCanvas.toDataURL('image/png');
-				console.log('imgUrl',imgUrl);
 				processSegmentation(canvasCtx, tmpCanvasCtx,segmentation);
-				var imgUrl2 = _canvasEl.toDataURL('image/png');
-				console.log('imgUrl222222',imgUrl2);
 				flag = true;
 				_videoTex.needsUpdate = true
 			});
